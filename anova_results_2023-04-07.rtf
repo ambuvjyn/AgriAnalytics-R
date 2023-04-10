@@ -1,0 +1,33 @@
+$statistics
+  MSerror Df Mean       CV  t.value      LSD
+       75 24   40 21.65064 2.063899 8.425831
+
+$parameters
+        test p.ajusted  name.t ntr alpha
+  Fisher-LSD      none SPFlour   3  0.05
+
+$means
+   Ragflour      std r      LCL      UCL Min Max Q25 Q50 Q75
+50       40 8.660254 9 34.04204 45.95796  30  50  30  40  50
+60       40 8.660254 9 34.04204 45.95796  30  50  30  40  50
+70       40 8.660254 9 34.04204 45.95796  30  50  30  40  50
+
+$comparison
+NULL
+
+$groups
+   Ragflour groups
+50       40      a
+60       40      a
+70       40      a
+
+attr(,"class")
+[1] "group"
+
+Call:
+lm(formula = paste(y, "~", x, "+", r), data = df())
+
+Coefficients:
+(Intercept)      SPFlour          Rep  
+  4.000e+01    1.256e-16    2.931e-15  
+
