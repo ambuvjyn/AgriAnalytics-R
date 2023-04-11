@@ -4,7 +4,7 @@
 ## _A software provides statistical analysis and data visualization specifically tailored for Agricultural Research_
 
 <p align="justify" style="font-size: 16px;">
-Authors : Dr. J. Sreekumar and Ambu Vijayan
+Authors : <a href="mailto:sreekumarctcri@gmail.com" rel="noopener noreferrer" target="_blank">Dr. J. Sreekumar</a> and <a href="mailto:ambuvjyn@gmail.com" rel="noopener noreferrer" target="_blank">Ambu Vijayan</a>
 </p>
 <p align="justify" style="font-size: 16px;">
 Institution : ICAR-Central Tuber Crops Research Institute
