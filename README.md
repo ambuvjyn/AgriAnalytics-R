@@ -7,7 +7,7 @@
 Authors : <a href="mailto:sreekumarctcri@gmail.com" rel="noopener noreferrer" target="_blank">Dr. J. Sreekumar</a> and <a href="mailto:ambuvjyn@gmail.com" rel="noopener noreferrer" target="_blank">Ambu Vijayan</a>
 </p>
 <p align="justify" style="font-size: 16px;">
-Institution : ICAR-Central Tuber Crops Research Institute
+Institution : <a href="https://www.ctcri.org/" rel="noopener noreferrer" target="_blank">ICAR-Central Tuber Crops Research Institute</a>
 </p>
 
 Website : <a href="https://sreejyothi.shinyapps.io/agrianalyticsr/" rel="noopener noreferrer" target="_blank">AgriAnalytics@R Ver. 0.1</a>
