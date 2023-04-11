@@ -1,6 +1,0 @@
-<p><strong>Authors</strong> : Dr. J. Sreekumar and Ambu Vijayan</p>
-<p><strong>Institution</strong> : ICAR-Central Tuber Crops Research Institue</p>
-<p><strong>Anova_CRD</strong></p>
-<p>Analysis of variance for completely randomized design (CRD) is a statistical technique used to compare means of more than two groups. This test assumes that the samples are independent, normally distributed, and have equal variances.&nbsp;</p>
-<p><strong>Anova_RBD</strong>&nbsp;</p>
-<p>Analysis of variance for randomized block design (RBD) is a statistical technique used to compare means of more than two groups. This test assumes that the samples are independent, normally distributed, and have equal variances. In RBD, the samples are divided into blocks, and each block is randomized independently.</p>
