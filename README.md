@@ -31,9 +31,8 @@ Anova RBD
 Analysis of variance for randomized block design (RBD) is a statistical technique used to compare means of more than two groups. This test assumes that the samples are independent, normally distributed, and have equal variances. In RBD, the samples are divided into blocks, and each block is randomized independently.
 </p>
 
-#### How to run
 <div align="justify style="font-size: 16px;">
-<h5>Manual for AgriAnalytics@R</h5>
+<h4>Manual for AgriAnalytics@R</h4>
 <p>To upload your data, click on the "Upload Data" tab.<br>
 Choose the file format (csv, xlsx, or xls) from the drop-down menu.<br>
 Select the file to upload by clicking on "Browse" and navigating to the file's location on your computer.<br>
@@ -58,6 +57,18 @@ Select the replication factor from the "Choose the Replication Factor" drop-down
 Click "Run ANOVA" to perform the analysis.<br>
 The ANOVA table and LSD test results will be displayed in the "ANOVA Table" and "LSD Test Results" sections, respectively.<br>
 You can download the ANOVA results and plot as RTF and PNG files, respectively.</p>
+<h5>CORRELATION</h5>
+<p>Navigate to the "Correlation" tab.</p>
+<p>In the Variable Selection section, select the variables to be used in the correlation analysis from the drop-down menu.</p>
+<p>Click on the "Run Correlation" button to start the correlation analysis.</p>
+<p>The results of the correlation analysis are displayed in four ways:</p>
+<ul>
+  <li><b>Correlation Matrix:</b> This shows the correlation coefficients between each pair of variables selected by the user.</li>
+  <li><b>Correlation Matrix with P Value:</b> This shows the correlation coefficients and their corresponding p-values.</li>
+  <li><b>Correlogram:</b> This shows a graphical representation of the correlation matrix.</li>
+  <li><b>Scatterplot Matrix:</b> This shows the scatterplots of each pair of variables selected by the user.</li>
+</ul>
+<p>To download the results, click on the "Download" button and select the file format (RTF or PNG).</p>
 </div>
 
 #### Development
