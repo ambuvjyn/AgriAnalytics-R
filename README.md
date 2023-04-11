@@ -1,4 +1,4 @@
-[![version](https://img.shields.io/badge/AgriAnalytics@R-0.1-green)](https://github.com/ambuvjyn/AgriAnalytics-R) [![license](https://img.shields.io/badge/License-GPLv3-blue)]() [![language](https://img.shields.io/badge/R-100%25-165caa)]() [![Commands](https://img.shields.io/badge/Commands-4-orange)]()
+[![version](https://img.shields.io/badge/AgriAnalytics@R-0.1-green)](https://github.com/ambuvjyn/AgriAnalytics-R) [![license](https://img.shields.io/badge/License-GPLv3-blue)]() [![language](https://img.shields.io/badge/R-100%25-165caa)]() [![Commands](https://img.shields.io/badge/Commands-11-orange)]()
 
 # AgriAnalytics@R
 ## _A software provides statistical analysis and data visualization specifically tailored for Agricultural Research_
