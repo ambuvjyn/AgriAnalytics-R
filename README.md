@@ -10,6 +10,8 @@ Authors : Dr. J. Sreekumar and Ambu Vijayan
 Institution : ICAR-Central Tuber Crops Research Institute
 </p>
 
+Website : <a href="https://sreejyothi.shinyapps.io/agrianalyticsr/" rel="noopener noreferrer" target="_blank">AgriAnalytics@R Ver. 0.1</a>
+
 #### Features
 <p align="justify" style="font-size: 16px;">
 <li>Importing data directly from excel formats like xlxs, xls or csv.</li>
