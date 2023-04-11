@@ -1,0 +1,432 @@
+##############################Packages_Needed###################################
+
+library(shiny)
+library(readxl)
+library(agricolae)
+library(markdown)
+library(bslib)
+library(pastecs)
+library(corrplot)
+library(GGally)
+library(ggplot2)
+library(correlation)
+
+
+#####################################UI#########################################
+
+# theme = shinytheme("cerulean")
+ui <- fluidPage(theme = bs_theme(version = 4, bootswatch = "minty"),
+                navbarPage(title = div(img(src = "favicon.png", height = 30), "AgriAnalytics@R Ver. 0.1"),
+                           header = list(
+                             tags$div(
+                               class = "navbar-header",
+                               HTML(paste0("<a class='navbar-brand' href='#'>",
+                                           "<img src='ICAR.png' height='30'></a>")),
+                               style = "float: right;"
+                             )
+                           ),
+                           tabPanel("Upload",
+                                    fluidRow(
+                                      column(width = 4,
+                                             fileInput("file", "Choose Excel File",
+                                                       accept = c(".xlsx", ".csv")),
+                                             tableOutput("data_preview")
+                                      ),
+                                      column(width = 8)
+                                    )
+                           ),
+                           tabPanel("Descriptive Statistics",
+                                    fluidRow(
+                                      column(width = 4,
+                                             selectInput("desc_xvar", "Select a Variable",
+                                                         choices = NULL)
+                                      ),
+                                      
+                                      column(width = 4,
+                                             selectInput("desc_grvar", "Select a Group Variable",
+                                                         choices = NULL)
+                                      ),
+                                      
+                                      column(width = 8,
+                                             verbatimTextOutput("summary_boxplot"),
+                                             plotOutput("boxplot_plot")
+                                      )
+                                    )
+                           ),
+                           tabPanel("Anova CRD",
+                                    fluidRow(
+                                      column(width = 4,
+                                             selectInput("xvar_crd", "Select X Variable",
+                                                         choices = NULL),
+                                             selectInput("yvar_crd", "Select Y Variable",
+                                                         choices = NULL),
+                                             actionButton("run_crd", "Run ANOVA")
+                                      ),
+                                      column(width = 8,
+                                             verbatimTextOutput("anova_crd"),
+                                             verbatimTextOutput("anova_crd_2"),
+                                             downloadButton("download_anova_crd", "Download ANOVA Results as RTF"),
+                                             plotOutput("plot_crd"),
+                                             downloadButton("download_plot_crd", "Download ANOVA PLOT as PNG")
+                                      )
+                                    )
+                           ),
+                           tabPanel("Anova RBD",
+                                    fluidRow(
+                                      column(width = 4,
+                                             selectInput("xvar_rbd", "Select Treatment Variable",
+                                                         choices = NULL),
+                                             selectInput("yvar_rbd", "Select Response Variable",
+                                                         choices = NULL),
+                                             selectInput("rep_var_rbd", "Select Replication Variable",
+                                                         choices = NULL),
+                                             actionButton("run_rbd", "Run ANOVA")
+                                      ),
+                                      column(width = 8,
+                                             verbatimTextOutput("anova_rbd"),
+                                             verbatimTextOutput("anova_rbd_2"),
+                                             downloadButton("download_anova_rbd", "Download ANOVA Results as RTF"),
+                                             plotOutput("plot_rbd"),
+                                             downloadButton("download_plot_rbd", "Download ANOVA PLOT as PNG")
+                                      )
+                                    )
+                           ),
+                           
+                           tabPanel("Correlation",
+                                    fluidRow(
+                                      column(width = 4,
+                                             selectizeInput("xvar_cor", "Select Variables",
+                                                            choices = NULL, multiple = TRUE
+                                             ),
+                                             uiOutput("cor_output_selector"),
+                                             actionButton("run_cor", "Run Correlation")
+                                             
+                                      ),
+                                      column(width = 8,
+                                             conditionalPanel(condition = "input.cor_output=='cor_out'",
+                                                              verbatimTextOutput("cor_out"),
+                                                              downloadButton("download_cor", "Download Correlation Results as RTF")
+                                             ),
+                                             conditionalPanel(condition = "input.cor_output=='cor_out_2'",
+                                                              verbatimTextOutput("cor_out_2"),
+                                                              downloadButton("download_cor_2", "Download Individual Correlation Results as RTF")
+                                             ),
+                                             conditionalPanel(condition = "input.cor_output=='plot_cor'",
+                                                              plotOutput("plot_cor"),
+                                                              downloadButton("download_plot_cor", "Download Correlogram as PNG")
+                                             ),
+                                             conditionalPanel(condition = "input.cor_output=='plot_cor_2'",
+                                                              plotOutput("plot_cor_2"),
+                                                              downloadButton("download_plot_cor_2", "Download Scatterplot Matrix as PNG")
+                                             )
+                                      )
+                                    )
+                           ),
+                           
+                           tabPanel("About", 
+                                    uiOutput("about_ui")
+                           )
+                           
+                ))
+
+################################################################################
+
+####################################Server######################################
+
+server <- function(input, output, session) {
+  df <- reactive({
+    req(input$file)
+    file <- input$file
+    ext <- tools::file_ext(file$datapath)
+    if (ext %in% c("xlsx", "xls")) {
+      read_excel(file$datapath)
+    } else if (ext == "csv") {
+      read.csv(file$datapath)
+    } else {
+      stop("Invalid file type")
+    }
+  })
+  
+###################################UPLOAD#######################################
+  # Data preview
+  output$data_preview <- renderTable({
+    df()
+  })
+  
+############################DESCRIPTIVE STATISTICS##############################
+  # Descriptive statistics output
+  observeEvent(df(), {
+    updateSelectInput(session, "desc_xvar", "Select Response Variable", choices = names(df()))
+    updateSelectInput(session, "desc_grvar", "Select Group Variable", choices = c("None", names(df())))
+  })
+  
+  
+  # Descriptive statistics output
+  output$summary_boxplot <- renderPrint({
+    x <- input$desc_xvar
+    gr<-input$desc_grvar
+    # summary(df()[[x]])
+    round(stat.desc(df()[[x]]),2)
+  })
+  
+  output$boxplot_plot <- renderPlot({
+    y <- input$desc_xvar
+    grv <- input$desc_grvar
+    
+    if (grv == "None") {
+      boxplot(df()[[y]], main = paste("Boxplot of", y), xlab = "",
+              ylab = paste(y))
+    } else {
+      boxplot(df()[[y]] ~ df()[[grv]], main = paste("Boxplot of", y), xlab = paste(grv),
+              ylab = paste(y))
+    }
+  })
+  
+###################################ANOVA CRD####################################    
+  # ANOVA_crd results output
+  
+  observeEvent(df(), {
+    numeric_cols <- sapply(df(), is.numeric)
+    updateSelectInput(session, "xvar_crd", "Choose the Treatment variable", choices = names(df())[numeric_cols])
+    updateSelectInput(session, "yvar_crd", "Choose the Response variable", choices = names(df())[numeric_cols])
+  })
+  
+  observeEvent(input$run_crd, {
+    if (!is.null(df())) {
+      x <- input$xvar_crd
+      y <- input$yvar_crd
+      model_crd <- lm(paste(y, "~", x), df())
+      model_lsd_crd <- LSD.test(model_crd, x, p.adj = "none")
+      
+      #Tab ANOVA First row
+      output$anova_crd <- renderPrint({
+        anova(model_crd)
+      })
+      
+      #Tab ANOVA Second row
+      output$anova_crd_2 <- renderPrint({
+        model_lsd_crd$groups
+      })
+      
+      # Download ANOVA results as RTF
+      filename <- paste0("anova_crd_results_", Sys.Date(), ".rtf")
+      sink(filename)
+      print(anova(model_crd))
+      print(model_lsd_crd$groups)
+      sink()
+      output$download_anova_crd <- downloadHandler(
+        filename = function() {
+          filename
+        },
+        content = function(file) {
+          file.copy(filename, file)
+        }
+      )
+      
+      #Tab ANOVA Third row
+      output$plot_crd <- renderPlot({
+        plot(model_lsd_crd)
+      })
+      
+      #Download ANOVA plot as PNG
+      output$download_plot_crd <- downloadHandler(
+        filename = function() {
+          paste("anova_plot", ".png", sep = "")
+        },
+        content = function(file) {
+          png(file, width = 800, height = 800, res = 120)
+          par(cex.lab = 1.5, cex.main = 1.5, mar = c(2,2,2,2))
+          plot(model_lsd_crd)
+          dev.off()
+        }
+      )
+    }
+  })
+  
+  ###################################ANOVA RBD####################################       
+  # ANOVA_rbd results output
+  
+  observeEvent(df(), {
+    numeric_cols <- sapply(df(), is.numeric)
+    updateSelectInput(session, "xvar_rbd", "Choose the Treatment variable", choices = names(df())[numeric_cols])
+    updateSelectInput(session, "yvar_rbd", "Choose the Response variable", choices = names(df())[numeric_cols])
+    updateSelectInput(session, "rep_var_rbd", "Choose the Replication factor", choices = names(df())[numeric_cols])
+  })
+  
+  observeEvent(input$run_rbd, {
+    if (!is.null(df())) {
+      x <- input$xvar_rbd
+      y <- input$yvar_rbd
+      r <- input$rep_var_rbd
+      model_rbd <- lm(paste(y, "~", r, "+", x), data = df())
+      model_lsd_rbd <- LSD.test(model_rbd, x, p.adj = "none")
+      
+      #Tab ANOVA First row
+      output$anova_rbd <- renderPrint({
+        anova(model_rbd)
+      })
+      
+      #Tab ANOVA Second row
+      output$anova_rbd_2 <- renderPrint({
+        model_lsd_rbd$groups
+      })
+      
+      #Download ANOVA results as RTF
+      filename <- paste0("anova_results_", Sys.Date(), ".rtf")
+      sink(filename)
+      print(anova(model_rbd))
+      print(model_lsd_rbd$groups)
+      sink()
+      output$download_anova_rbd <- downloadHandler(
+        filename = function() {
+          filename
+        },
+        content = function(file) {
+          file.copy(filename, file)
+        }
+      )
+      
+      #Tab ANOVA Third row
+      output$plot_rbd <- renderPlot({
+        plot(model_lsd_rbd)
+      })
+      
+      #Download ANOVA plot as PNG
+      output$download_plot_rbd <- downloadHandler(
+        filename = function() {
+          paste("anova_plot", ".png", sep = "")
+        },
+        content = function(file) {
+          png(file, width = 800, height = 800, res = 120)
+          par(cex.lab = 1.5, cex.main = 1.5, mar = c(2,2,2,2))
+          plot(model_lsd_rbd)
+          dev.off()
+        }
+      )
+      
+    }
+  })
+  
+  #################################CORRELATION####################################     
+  # Correlation results output
+  
+  observeEvent(df(), {
+    numeric_cols <- sapply(df(), is.numeric)
+    updateSelectizeInput(session, "xvar_cor", "Choose Variables", 
+                         choices = names(df())[numeric_cols])
+  })
+  
+  observeEvent(input$run_cor, {
+    if (!is.null(df())) {
+      x <- input$xvar_cor
+      y <- input$yvar_cor
+      model_cor <- round(cor(df()[, c(x, y = NULL)]), 2)
+      model_cor_2 <- correlation::correlation((df()[, c(x, y = NULL)]),include_factors = TRUE, method = "auto")
+      
+      #Tab Correlation First row
+      output$cor_out <- renderPrint({
+        model_cor
+      })
+      
+      
+      #Download Correlation  as RTF
+      filename <- paste0("Correlation_results_", Sys.Date(), ".rtf")
+      sink(filename)
+      print(model_cor)
+      sink()
+      output$download_cor <- downloadHandler(
+        filename = function() {
+          filename
+        },
+        content = function(file) {
+          file.copy(filename, file)
+        }
+      )
+      
+      #Tab Correlation Second row
+      output$cor_out_2 <- renderPrint({
+        model_cor_2
+      })
+      
+      
+      #Download Correlation  as RTF
+      filename <- paste0("Correlation_results_withp_", Sys.Date(), ".rtf")
+      sink(filename)
+      print(model_cor_2)
+      sink()
+      output$download_cor_2 <- downloadHandler(
+        filename = function() {
+          filename
+        },
+        content = function(file) {
+          file.copy(filename, file)
+        }
+      )
+      
+      #Tab Correlation Third row
+      output$plot_cor <- renderPlot({
+        corrplot(model_cor)
+      })
+      
+      #Download corrplot as PNG
+      output$download_plot_cor <- downloadHandler(
+        filename = function() {
+          paste("cor_plot", ".png", sep = "")
+        },
+        content = function(file) {
+          png(file, width = 800, height = 800, res = 120)
+          par(cex.lab = 1.5, cex.main = 1.5, mar = c(2,2,2,2))
+          corrplot(model_cor)
+          dev.off()
+        }
+      )
+      
+      #Tab Correlation Third row
+      output$plot_cor_2 <- renderPlot({
+        ggpairs(df()[, x])
+      })
+      
+      # Download corrplot as PNG_2
+      output$download_plot_cor_2 <- downloadHandler(
+        filename = function() {
+          paste("scatter_plot", ".png", sep = "")
+        },
+        content = function(file) {
+          ggsave(file, plot = ggpairs(df()[, x]))
+        }
+      )
+      
+    }
+  })
+  
+  # Correlation output selector
+  output$cor_output_selector <- renderUI({
+    selectInput(
+      "cor_output", 
+      "Select correlation output", 
+      choices = c("Correlation Matrix" = "cor_out", 
+                  "Correlation Matrix with P value" = "cor_out_2", 
+                  "Correlogram" = "plot_cor", 
+                  "Scatterplot Matrix" = "plot_cor_2")
+    )
+  })
+  
+  # Display selected correlation output
+  output$selected_cor_output <- renderPrint({
+    eval(parse(text = input$cor_output))
+  })
+  
+  ###################################ABOUT########################################       
+  #Read the contents of the README.md file
+  about_text <- readLines("README.md")
+  
+  #Render the contents of the README.md file as Markdown
+  output$about_ui <- renderText({
+    HTML(renderMarkdown(about_text))
+  })
+  
+}
+
+#################################App_Exec#######################################
+
+shinyApp(ui, server)
