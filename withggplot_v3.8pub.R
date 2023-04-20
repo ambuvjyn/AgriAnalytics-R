@@ -159,7 +159,6 @@ server <- function(input, output, session) {
   })
   
   output$summary <- renderUI({
-  x <- input$desc_xvar
   dat <- data.frame(
     Descriptors = c("nbr.val", "nbr.null", "nbr.na", "min", "max", "range", "sum", "median", "mean", "SE.mean", "CI.mean.0.95", "var", "std.dev", "coef.var"),
     stat.desc(df()) %>% round(2))
