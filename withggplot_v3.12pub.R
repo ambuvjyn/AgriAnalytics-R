@@ -89,7 +89,7 @@ ui <- fluidPage(theme = bs_theme(version = 4, bootswatch = "minty"),
                                       )
                                     )
                            ),
-                           
+
                            tabPanel("Correlation",
                                     fluidRow(
                                       column(width = 4,
@@ -98,7 +98,7 @@ ui <- fluidPage(theme = bs_theme(version = 4, bootswatch = "minty"),
                                              ),
                                              uiOutput("cor_output_selector"),
                                              actionButton("run_cor", "Run Correlation")
-                                             
+
                                       ),
                                       column(width = 8,
                                              conditionalPanel(condition = "input.cor_output=='cor_out'",
@@ -120,11 +120,11 @@ ui <- fluidPage(theme = bs_theme(version = 4, bootswatch = "minty"),
                                       )
                                     )
                            ),
-                           
-                           tabPanel("About", 
+
+                           tabPanel("About",
                                     uiOutput("about_ui")
                            )
-                           
+
                 )
 )
 
@@ -145,20 +145,20 @@ server <- function(input, output, session) {
       stop("Invalid file type")
     }
   })
-  
+
   ###################################UPLOAD#######################################
   # Data preview
   output$data_preview <- renderTable({
     df()
   })
-  
+
   ############################DESCRIPTIVE STATISTICS##############################
   # Descriptive statistics output
   observeEvent(df(), {
     updateSelectInput(session, "desc_xvar", "Select Response Variable", choices = names(df()))
     updateSelectInput(session, "desc_grvar", "Select Group Variable", choices = c("None", names(df())))
   })
-  
+
   output$summary <- renderUI({
     dat <- data.frame(
       Descriptors = c("nbr.val", "nbr.null", "nbr.na", "min", "max", "range", "sum", "median", "mean", "SE.mean", "CI.mean.0.95", "var", "std.dev", "coef.var"),
@@ -166,11 +166,11 @@ server <- function(input, output, session) {
     tbl <- flextable(dat)
     htmltools_value(tbl)
   })
-  
+
   output$boxplot <- renderPlot({
     y <- input$desc_xvar
     grv <- input$desc_grvar
-    
+
     if (grv == "None") {
       boxplot(df()[[y]], main = paste("Boxplot of", y), xlab = "",
               ylab = paste(y))
@@ -179,34 +179,34 @@ server <- function(input, output, session) {
               ylab = paste(y))
     }
   })
-  
-  
-  ###################################ANOVA CRD####################################    
+
+
+  ###################################ANOVA CRD####################################
   # ANOVA_crd results output
-  
+
   observeEvent(df(), {
     numeric_cols <- sapply(df(), is.numeric)
-    updateSelectInput(session, "xvar_crd", "Choose the Treatment variable", choices = names(df())[numeric_cols])
+    updateSelectInput(session, "xvar_crd", "Choose the Treatment variable", choices = names(df()))
     updateSelectInput(session, "yvar_crd", "Choose the Response variable", choices = names(df())[numeric_cols])
   })
-  
+
   observeEvent(input$run_crd, {
     if (!is.null(df())) {
       x <- input$xvar_crd
       y <- input$yvar_crd
       model_crd <- lm(paste(y, "~", x), df())
       model_lsd_crd <- LSD.test(model_crd, x, p.adj = "none")
-      
+
       #Tab ANOVA First row
       output$anova_crd <- renderPrint({
         anova(model_crd)
       })
-      
+
       #Tab ANOVA Second row
       output$anova_crd_2 <- renderPrint({
         model_lsd_crd$groups
       })
-      
+
       # Download ANOVA results as RTF
       filename <- paste0("anova_crd_results_", Sys.Date(), ".rtf")
       sink(filename)
@@ -221,12 +221,12 @@ server <- function(input, output, session) {
           file.copy(filename, file)
         }
       )
-      
+
       #Tab ANOVA Third row
       output$plot_crd <- renderPlot({
         plot(model_lsd_crd)
       })
-      
+
       #Download ANOVA plot as PNG
       output$download_plot_crd <- downloadHandler(
         filename = function() {
@@ -241,16 +241,16 @@ server <- function(input, output, session) {
       )
     }
   })
-  
-  ###################################ANOVA RBD####################################       
+
+  ###################################ANOVA RBD####################################
   # ANOVA_rbd results output
-  
+
   observeEvent(df(), {
     updateSelectInput(session, "xvar_rbd", "Choose the Treatment variable", choices = names(df()))
-    updateSelectInput(session, "yvar_rbd", "Choose the Response variable", choices = names(df()))
-    updateSelectInput(session, "rep_var_rbd", "Choose the Replication factor", choices = names(df()))
+    updateSelectInput(session, "yvar_rbd", "Choose the Response variable", choices = names(df())[numeric_cols])
+    updateSelectInput(session, "rep_var_rbd", "Choose the Replication factor", choices = names(df())[numeric_cols])
   })
-  
+
   observeEvent(input$run_rbd, {
     if (!is.null(df())) {
       x <- input$xvar_rbd
@@ -275,12 +275,12 @@ server <- function(input, output, session) {
         # store the results in a list
         anova_list <- list(anova = anova(model_rbd), lsd_groups = model_lsd_rbd$groups)
       }
-      
+
       #Tab ANOVA First row
       output$anova_rbd <- renderPrint({
         anova_list
       })
-      
+
       #Download ANOVA results as RTF
       filename <- paste0("anova_results_", Sys.Date(), ".rtf")
       sink(filename)
@@ -299,7 +299,7 @@ server <- function(input, output, session) {
       output$plot_rbd <- renderPlot({
         plot(model_lsd_rbd)
       })
-      
+
       #Download ANOVA plot as PNG
       output$download_plot_rbd <- downloadHandler(
         filename = function() {
@@ -312,32 +312,32 @@ server <- function(input, output, session) {
           dev.off()
         }
       )
-      
+
     }
   })
-  
-  #################################CORRELATION####################################     
+
+  #################################CORRELATION####################################
   # Correlation results output
-  
+
   observeEvent(df(), {
     numeric_cols <- sapply(df(), is.numeric)
-    updateSelectizeInput(session, "xvar_cor", "Choose Variables", 
+    updateSelectizeInput(session, "xvar_cor", "Choose Variables",
                          choices = names(df())[numeric_cols])
   })
-  
+
   observeEvent(input$run_cor, {
     if (!is.null(df())) {
       x <- input$xvar_cor
       y <- input$yvar_cor
       model_cor <- round(cor(df()[, c(x, y = NULL)]), 2)
       model_cor_2 <- correlation::correlation((df()[, c(x, y = NULL)]),include_factors = TRUE, method = "auto")
-      
+
       #Tab Correlation First row
       output$cor_out <- renderPrint({
         model_cor
       })
-      
-      
+
+
       #Download Correlation  as RTF
       filename <- paste0("Correlation_results_", Sys.Date(), ".rtf")
       sink(filename)
@@ -351,13 +351,13 @@ server <- function(input, output, session) {
           file.copy(filename, file)
         }
       )
-      
+
       #Tab Correlation Second row
       output$cor_out_2 <- renderPrint({
         model_cor_2
       })
-      
-      
+
+
       #Download Correlation  as RTF
       filename <- paste0("Correlation_results_withp_", Sys.Date(), ".rtf")
       sink(filename)
@@ -371,12 +371,12 @@ server <- function(input, output, session) {
           file.copy(filename, file)
         }
       )
-      
+
       #Tab Correlation Third row
       output$plot_cor <- renderPlot({
         corrplot(model_cor)
       })
-      
+
       #Download corrplot as PNG
       output$download_plot_cor <- downloadHandler(
         filename = function() {
@@ -389,12 +389,12 @@ server <- function(input, output, session) {
           dev.off()
         }
       )
-      
+
       #Tab Correlation Third row
       output$plot_cor_2 <- renderPlot({
         ggpairs(df()[, x])
       })
-      
+
       # Download corrplot as PNG_2
       output$download_plot_cor_2 <- downloadHandler(
         filename = function() {
@@ -404,36 +404,36 @@ server <- function(input, output, session) {
           ggsave(file, plot = ggpairs(df()[, x]))
         }
       )
-      
+
     }
   })
-  
+
   # Correlation output selector
   output$cor_output_selector <- renderUI({
     selectInput(
-      "cor_output", 
-      "Select correlation output", 
-      choices = c("Correlation Matrix" = "cor_out", 
-                  "Correlation Matrix with P value" = "cor_out_2", 
-                  "Correlogram" = "plot_cor", 
+      "cor_output",
+      "Select correlation output",
+      choices = c("Correlation Matrix" = "cor_out",
+                  "Correlation Matrix with P value" = "cor_out_2",
+                  "Correlogram" = "plot_cor",
                   "Scatterplot Matrix" = "plot_cor_2")
     )
   })
-  
+
   # Display selected correlation output
   output$selected_cor_output <- renderPrint({
     eval(parse(text = input$cor_output))
   })
-  
-  ###################################ABOUT########################################       
+
+  ###################################ABOUT########################################
   #Read the contents of the README.md file
   about_text <- readLines("README.md")
-  
+
   #Render the contents of the README.md file as Markdown
   output$about_ui <- renderText({
     HTML(renderMarkdown(about_text))
   })
-  
+
 }
 
 #################################App_Exec#######################################
