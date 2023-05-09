@@ -73,15 +73,14 @@ ui <- fluidPage(theme = bs_theme(version = 4, bootswatch = "minty"),
                                       column(width = 4,
                                              selectInput("xvar_rbd", "Select Treatment Variable",
                                                          choices = NULL),
-                                             selectInput("yvar_rbd", "Select Response Variable",
-                                                         choices = NULL),
+                                             selectizeInput("yvar_rbd", "Select Response Variable",
+                                                            choices = NULL, multiple = TRUE),
                                              selectInput("rep_var_rbd", "Select Replication Variable",
                                                          choices = NULL),
                                              actionButton("run_rbd", "Run ANOVA")
                                       ),
                                       column(width = 8,
                                              verbatimTextOutput("anova_rbd"),
-                                             verbatimTextOutput("anova_rbd_2"),
                                              downloadButton("download_anova_rbd", "Download ANOVA Results as RTF"),
                                              plotOutput("plot_rbd"),
                                              downloadButton("download_plot_rbd", "Download ANOVA PLOT as PNG")
@@ -225,6 +224,7 @@ server <- function(input, output, session) {
       output$plot_crd <- renderPlot({
         plot(model_lsd_crd)
       })
+        
       
       #Download ANOVA plot as PNG
       output$download_plot_crd <- downloadHandler(
@@ -245,10 +245,9 @@ server <- function(input, output, session) {
   # ANOVA_rbd results output
   
   observeEvent(df(), {
-    numeric_cols <- sapply(df(), is.numeric)
-    updateSelectInput(session, "xvar_rbd", "Choose the Treatment variable", choices = names(df())[numeric_cols])
-    updateSelectInput(session, "yvar_rbd", "Choose the Response variable", choices = names(df())[numeric_cols])
-    updateSelectInput(session, "rep_var_rbd", "Choose the Replication factor", choices = names(df())[numeric_cols])
+    updateSelectInput(session, "xvar_rbd", "Choose the Treatment variable", choices = names(df()))
+    updateSelectInput(session, "yvar_rbd", "Choose the Response variable", choices = names(df()))
+    updateSelectInput(session, "rep_var_rbd", "Choose the Replication factor", choices = names(df()))
   })
   
   observeEvent(input$run_rbd, {
@@ -256,24 +255,35 @@ server <- function(input, output, session) {
       x <- input$xvar_rbd
       y <- input$yvar_rbd
       r <- input$rep_var_rbd
-      model_rbd <- lm(paste(y, "~", r, "+", x), data = df())
-      model_lsd_rbd <- LSD.test(model_rbd, x, p.adj = "none")
+      if (is.null(y)) {
+        return()
+      }
+      if (length(y) > 1) {
+        # create a list to store the results for each response variable
+        anova_list <- list()
+        for (i in 1:length(y)) {
+          # fit the ANOVA model for each response variable
+          model_rbd <- lm(paste(y[i], "~", r, "+", x), data = df())
+          model_lsd_rbd <- LSD.test(model_rbd, x, p.adj = "none")
+          anova_list[[y[i]]] <- list(anova = anova(model_rbd), lsd_groups = model_lsd_rbd$groups)
+        }
+      } else {
+        # fit the ANOVA model for a single response variable
+        model_rbd <- lm(paste(y, "~", r, "+", x), data = df())
+        model_lsd_rbd <- LSD.test(model_rbd, x, p.adj = "none")
+        # store the results in a list
+        anova_list <- list(anova = anova(model_rbd), lsd_groups = model_lsd_rbd$groups)
+      }
       
       #Tab ANOVA First row
       output$anova_rbd <- renderPrint({
-        anova(model_rbd)
-      })
-      
-      #Tab ANOVA Second row
-      output$anova_rbd_2 <- renderPrint({
-        model_lsd_rbd$groups
+        anova_list
       })
       
       #Download ANOVA results as RTF
       filename <- paste0("anova_results_", Sys.Date(), ".rtf")
       sink(filename)
-      print(anova(model_rbd))
-      print(model_lsd_rbd$groups)
+      print(anova_list)
       sink()
       output$download_anova_rbd <- downloadHandler(
         filename = function() {
@@ -284,9 +294,13 @@ server <- function(input, output, session) {
         }
       )
       
+      # fit the ANOVA model for a single response variable for plotting
+      model_rbd_plot <- lm(paste(y, "~", r, "+", x), data = df())
+      model_lsd_rbd_plot <- LSD.test(model_rbd_plot, x, p.adj = "none")
+
       #Tab ANOVA Third row
       output$plot_rbd <- renderPlot({
-        plot(model_lsd_rbd)
+        plot(model_lsd_rbd_plot)
       })
       
       #Download ANOVA plot as PNG
@@ -297,7 +311,7 @@ server <- function(input, output, session) {
         content = function(file) {
           png(file, width = 800, height = 800, res = 120)
           par(cex.lab = 1.5, cex.main = 1.5, mar = c(2,2,2,2))
-          plot(model_lsd_rbd)
+          plot(model_lsd_rbd_plot)
           dev.off()
         }
       )
