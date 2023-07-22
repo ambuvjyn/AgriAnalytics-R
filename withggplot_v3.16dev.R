@@ -82,6 +82,7 @@ ui <- fluidPage(theme = bs_theme(version = 4, bootswatch = "minty"),
                                                                     choices = NULL),
                                                         numericInput("plot_crd_width", "Plot Width", 800),
                                                         numericInput("plot_crd_height", "Plot Height", 800),
+                                                        numericInput("plot_crd_resolution", "Plot Resolution", 120),
                                                         actionButton("run_crd_plot", "Plot ANOVA")
                                                         
                                                  ),
@@ -393,7 +394,7 @@ server <- function(input, output, session) {
           paste("anova_plot", ".png", sep = "")
         },
         content = function(file) {
-          png(file, width = input$plot_crd_width, height = input$plot_crd_height, res = 120)
+          png(file, width = input$plot_crd_width, height = input$plot_crd_height, res = input$plot_crd_resolution)
           par(cex.lab = 1.5, cex.main = 1.5, mar = c(2, 2, 2, 2))
           plot(model_lsd_crd_plot, xlab = input$xvar_crd_plot, ylab = input$yvar_crd_plot,
                width = input$plot_crd_width, height = input$plot_crd_height)
