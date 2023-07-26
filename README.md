@@ -1,4 +1,4 @@
-[![version](https://img.shields.io/badge/AgriAnalytics@R-0.1-green)](https://github.com/ambuvjyn/AgriAnalytics-R) [![license](https://img.shields.io/badge/License-GPLv3-blue)]() [![language](https://img.shields.io/badge/R-100%25-165caa)]() [![Commands](https://img.shields.io/badge/Commands-11-orange)]()
+[![version](https://img.shields.io/badge/AgriAnalytics@R-3.18-green)](https://github.com/ambuvjyn/AgriAnalytics-R) [![license](https://img.shields.io/badge/License-GPLv3-blue)]() [![language](https://img.shields.io/badge/R-100%25-165caa)]() [![Commands](https://img.shields.io/badge/Commands-15-orange)]()
 
 # AgriAnalytics@R
 ## _A software provides statistical analysis and data visualization specifically tailored for Agricultural Research_
@@ -94,6 +94,10 @@ AgriAnalytics@R is a blend of
         <tr>
             <td style="width: 13.87%;">Agricolae<br></td>
             <td style="width: 85.5108%;"><a href="https://github.com/myaseen208/agricolae#readme" rel="noopener noreferrer" target="_blank">https://github.com/myaseen208/agricolae#readme</a><br></td>
+        </tr>
+	<tr>
+            <td style="width: 13.87%;">fixr<br></td>
+            <td style="width: 85.5108%;"><a href="https://github.com/ambuvjyn/fixr/blob/main/README.md" rel="noopener noreferrer" target="_blank">https://github.com/ambuvjyn/fixr/blob/main/README.md</a><br></td>
         </tr>
         <tr>
             <td style="width: 13.87%;">readxl<br></td>
